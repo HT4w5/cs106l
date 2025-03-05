@@ -24,18 +24,12 @@ const std::string COURSES_NOT_OFFERED_PATH = "student_output/courses_not_offered
  * You must fill in the types of the fields in this struct.
  * Hint: Remember what types C++ streams work with?!
  */
-struct Course {
-  /* STUDENT TODO */ title;
-  /* STUDENT TODO */ number_of_units;
-  /* STUDENT TODO */ quarter;
+struct Course
+{
+  std::string title;
+  std::string number_of_units;
+  std::string quarter;
 };
-
-/**
- * (STUDENT TODO) Look at how the main function (at the bottom of this file)
- * calls `parse_csv`, `write_courses_offered`, and `write_courses_not_offered`.
- * Modify the signatures of these functions so that they work as intended, and then delete this
- * comment!
- */
 
 /**
  * Note:
@@ -58,8 +52,28 @@ struct Course {
  * @param filename The name of the file to parse.
  * @param courses  A vector of courses to populate.
  */
-void parse_csv(std::string filename, std::vector<Course> courses) {
-  /* (STUDENT TODO) Your code goes here... */
+void parse_csv(std::string filename, std::vector<Course> &courses)
+{
+  std::ifstream ifs(filename);
+  if (!ifs.is_open())
+  {
+    std::cerr << "Can't open file: " << filename << std::endl;
+    return;
+  }
+
+  std::string tempLine;
+  Course tempCourse;
+  // Despose first line.
+  std::getline(ifs, tempLine);
+  // Parse all lines.
+  while (std::getline(ifs, tempLine))
+  {
+    std::vector<std::string> tempFields = split(tempLine, ',');
+    tempCourse.title = tempFields[0];
+    tempCourse.number_of_units = tempFields[1];
+    tempCourse.quarter = tempFields[2];
+    courses.push_back(tempCourse);
+  }
 }
 
 /**
@@ -80,8 +94,34 @@ void parse_csv(std::string filename, std::vector<Course> courses) {
  * @param all_courses A vector of all courses gotten by calling `parse_csv`.
  *                    This vector will be modified by removing all offered courses.
  */
-void write_courses_offered(std::vector<Course> all_courses) {
-  /* (STUDENT TODO) Your code goes here... */
+void write_courses_offered(std::vector<Course> &all_courses)
+{
+  // Open file.
+  std::ofstream ofs("student_output/courses_offered.csv");
+  if (!ofs.is_open())
+  {
+    std::cerr << "Failed to open file: " << "student_output/courses_offered.csv" << std::endl;
+    return;
+  }
+
+  // Output column header row.
+  ofs << "Title,Number of Units,Quarter" << '\n';
+
+  // Create copy vector.
+  std::vector<Course> newCourses = all_courses;
+
+  // Find and output offered courses.
+  for (Course elem : all_courses)
+  {
+    if (elem.quarter != "null")
+    {
+      delete_elem_from_vector(newCourses, elem);
+      ofs << elem.title << "," << elem.number_of_units << "," << elem.quarter << '\n';
+    }
+  }
+
+  // Replace original vector.
+  all_courses = newCourses;
 }
 
 /**
@@ -97,11 +137,27 @@ void write_courses_offered(std::vector<Course> all_courses) {
  *
  * @param unlisted_courses A vector of courses that are not offered.
  */
-void write_courses_not_offered(std::vector<Course> unlisted_courses) {
-  /* (STUDENT TODO) Your code goes here... */
+void write_courses_not_offered(std::vector<Course> unlisted_courses)
+{
+  // Open file.
+  std::ofstream ofs("student_output/courses_not_offered.csv");
+  if (!ofs.is_open())
+  {
+    std::cerr << "Failed to open file: " << "student_output/courses_not_offered.csv" << std::endl;
+    return;
+  }
+
+  // Output column header row.
+  ofs << "Title,Number of Units,Quarter" << '\n';
+
+  for (Course elem : unlisted_courses)
+  {
+    ofs << elem.title << "," << elem.number_of_units << "," << elem.quarter << '\n';
+  }
 }
 
-int main() {
+int main()
+{
   /* Makes sure you defined your Course struct correctly! */
   static_assert(is_valid_course<Course>, "Course struct is not correctly defined!");
 

@@ -13,8 +13,9 @@
 #include <set>
 #include <string>
 #include <unordered_set>
+#include <sstream>
 
-std::string kYourName = "STUDENT TODO"; // Don't forget to change this!
+std::string kYourName = "John Doe"; // Don't forget to change this!
 
 /**
  * Takes in a file name and returns a set containing all of the applicant names as a set.
@@ -27,8 +28,31 @@ std::string kYourName = "STUDENT TODO"; // Don't forget to change this!
  * below it) to use a `std::unordered_set` instead. If you do so, make sure
  * to also change the corresponding functions in `utils.h`.
  */
-std::set<std::string> get_applicants(std::string filename) {
-  // STUDENT TODO: Implement this function.
+std::set<std::string> get_applicants(std::string filename)
+{
+  std::string line;
+  std::ifstream ifs(filename);
+  std::set<std::string> applicantSet;
+  while (std::getline(ifs, line))
+  {
+    applicantSet.insert(line);
+  }
+  return applicantSet;
+}
+
+std::pair<char, char> get_initials(const std::string &name)
+{
+  char first, last;
+  first = name[0];
+  for (size_t i = 1; i < name.size(); ++i)
+  {
+    if (name[i] == ' ')
+    {
+      last = name[i + 1];
+      break;
+    }
+  }
+  return {first, last};
 }
 
 /**
@@ -39,8 +63,18 @@ std::set<std::string> get_applicants(std::string filename) {
  * @param students  The set of student names.
  * @return          A queue containing pointers to each matching name.
  */
-std::queue<const std::string*> find_matches(std::string name, std::set<std::string>& students) {
-  // STUDENT TODO: Implement this function.
+std::queue<const std::string *> find_matches(std::string name, std::set<std::string> &students)
+{
+  auto my_initials = get_initials(name);
+  std::queue<const std::string *> matches;
+  for (const auto &candidate : students)
+  {
+    if (my_initials == get_initials(candidate))
+    {
+      matches.push(&candidate);
+    }
+  }
+  return matches;
 }
 
 /**
@@ -53,8 +87,16 @@ std::queue<const std::string*> find_matches(std::string name, std::set<std::stri
  * @return        Your magical one true love.
  *                Will return "NO MATCHES FOUND." if `matches` is empty.
  */
-std::string get_match(std::queue<const std::string*>& matches) {
-  // STUDENT TODO: Implement this function.
+std::string get_match(std::queue<const std::string *> &matches)
+{
+  if (!matches.empty())
+  {
+    return *(matches.front());
+  }
+  else
+  {
+    return "NO MATCHES FOUND.";
+  }
 }
 
 /* #### Please don't remove this line! #### */
