@@ -34,8 +34,32 @@ Corpus tokenize(const std::string &source)
 
 std::set<Mispelling> spellcheck(const Corpus &source, const Dictionary &dictionary)
 {
-  /* TODO: Implement this method */
-  return std::set<Mispelling>();
+  namespace rv = std::ranges::views;
+  namespace rng = std::ranges;
+  // Correctly spelled predicate.
+  auto isIncorrect = [&dictionary](Token elem)
+  {
+    return !dictionary.contains(elem.content);
+  };
+  // Generate suggestions operation.
+  auto genSuggest = [&dictionary](Token elem) -> Mispelling
+  {
+    // Is one-step-away predicate.
+    auto isOneStepAway = [&elem](std::string word) -> bool
+    {
+      return levenshtein(elem.content, word) == 1;
+    };
+    // Generate range of suggestions.
+    auto suggestions = dictionary | rv::filter(isOneStepAway) | rng::to<std::set<std::string>>();
+    return {elem, suggestions};
+  };
+  // Empty suggestions predicate.
+  auto hasSuggestions = [](Mispelling elem) -> bool
+  {
+    return !elem.suggestions.empty();
+  };
+  // Generate mispelling set.
+  return source | rv::filter(isIncorrect) | rv::transform(genSuggest) | rv::filter(hasSuggestions) | rng::to<std::set<Mispelling>>();
 };
 
 /* Helper methods */
